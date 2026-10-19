@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>勉強会スライド — mazume-tech-club</title>
+    <meta
+      name="description"
+      content="mazume-tech-club の勉強会スライド一覧。資料ごとにディレクトリを分けた静的HTMLです。"
+    />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+JP:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/theme.css" />
+  </head>
+  <body class="catalog">
+    <div class="catalog-wrap">
+      <p class="brand">mazume-tech-club</p>
+      <h1>勉強会スライド</h1>
+      <p class="lede">
+        フロントエンドの勉強会資料を、テーマごとに1ディレクトリのHTMLで置く場所です。ビルドはありません。reveal.js
+        は CDN から読みます。
+      </p>
+
+      <h2>資料</h2>
+      <a class="card" href="dom-virtual-dom/">
+        <p class="card-kicker">01 — HTML slides</p>
+        <h3>DOMと仮想DOMを体系的に理解する</h3>
+        <p>
+          ブラウザがDOMをどう扱い、なぜ仮想DOMが生まれ、Svelte・Solid・Vue Vapor
+          を含むいまの選択肢は何かを、コードとスライド内デモでたどる。
+        </p>
+        <div class="card-meta">
+          <span class="chip">日本語</span>
+          <span class="chip">36枚</span>
+          <span class="chip">reveal.js</span>
+        </div>
+      </a>
+
+      <h2>資料を追加する</h2>
+      <ol class="steps">
+        <li>
+          <b>01</b>
+          <span>
+            <code>your-topic/index.html</code> を作る。ディレクトリ名がURLになるので、英小文字とハイフンにする。
+          </span>
+        </li>
+        <li>
+          <b>02</b>
+          <span>
+            <code>../assets/theme.css</code> と reveal.js の CDN を読むと、この一覧と同じ見た目に揃う。骨組みは README にある。
+          </span>
+        </li>
+        <li>
+          <b>03</b>
+          <span>このページの「資料」にカードを足し、README の一覧にも1行足す。</span>
+        </li>
+        <li>
+          <b>04</b>
+          <span>
+            <code>main</code> へマージすると GitHub Actions が Pages へ出す。新しいディレクトリは、除外している
+            <code>.git</code> と <code>.github</code> 以外ならそのまま配信される。
+          </span>
+        </li>
+      </ol>
+
+      <p class="catalog-foot">
+        閲覧には CDN（reveal.js とフォント）へのネットワークが要る。ローカルではリポジトリ直下で
+        <code>python3 -m http.server</code> を起動する。
+      </p>
+    </div>
+  </body>
+</html>
