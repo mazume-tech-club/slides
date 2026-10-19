@@ -6,21 +6,21 @@ mazume-tech-club の勉強会スライド集です。資料はテーマごとに
 
 | 資料 | パス | 内容 |
 | --- | --- | --- |
-| DOMと仮想DOMを体系的に理解する | [dom-virtual-dom/](dom-virtual-dom/) | DOMの木、レンダリングパイプライン、仮想DOMの差分と key、ミニ実装、Svelte / Solid / Vue Vapor との比較 |
+| DOMと仮想DOMを体系的に理解する | [dom-virtual-dom/](dom-virtual-dom/) | 初心者向け。DOMを家系図、仮想DOMを設計図にたとえ、描画・key・Svelte / Solid / Vue Vapor まで進む |
 
 公開時の想定URLは <https://mazume-tech-club.github.io/slides/dom-virtual-dom/> です。一覧は <https://mazume-tech-club.github.io/slides/> です。
 
 ### DOMと仮想DOMを体系的に理解する
 
-対象は、フロントエンドを触ったことはあるが DOM / 仮想DOMを体系的には追っていない人です。
+対象は、HTML / CSS / JavaScript の基本（変数、関数、`querySelector`）はわかるが、DOMや仮想DOMは体系的には知らない人です。用語は初出で日常の言葉に言い換えます。
 
-1. DOMとは（パース、ノード、API、イベント）
-2. レンダリングパイプライン（レイアウトスラッシングまで）
-3. 素のDOM操作の課題
-4. 仮想DOM、key、O(n) のヒューリスティック
-5. ミニ仮想DOM（`h`、初回描画、diff / patch）と、key の有無を見比べるデモ
-6. 「仮想DOMは速い」が正確でない理由
-7. Svelte、Solid、Vue Vapor との比較
+1. DOMとは（家系図、ノード、短いコード、クリックが親へ上がること）
+2. 画面が描かれる順番（測り直しのたとえまで）
+3. 手作業で更新すると、名簿と座席表がずれること
+4. 仮想DOM（設計図を比べる、`key` は名札）
+5. 2つのデモ。それぞれの直前に、押すと何が見えるかを置く
+6. 「仮想DOMは速い」は、比べる相手が要ること
+7. Svelte、Solid、Vue と Vapor。比較表は速さの順位ではない
 
 スライド内のボタンはページ内のデモです。矢印キーでスライドを進めます。
 

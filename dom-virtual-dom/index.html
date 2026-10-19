@@ -6,7 +6,7 @@
     <title>DOMと仮想DOMを体系的に理解する — mazume-tech-club</title>
     <meta
       name="description"
-      content="ブラウザがDOMをどう扱い、なぜ仮想DOMが生まれ、いまどの選択肢があるかを説明する勉強会資料。"
+      content="HTML/CSS/JSの基本がわかれば読める、DOMと仮想DOMの入門スライド。家系図と設計図のたとえで、ブラウザの木と差分更新を説明する。"
     />
     <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -30,10 +30,8 @@
           <div class="title-grid">
             <div>
               <h1>DOMと仮想DOMを<br />体系的に理解する</h1>
-              <p class="lede">
-                ブラウザが木をどう扱い、なぜ仮想DOMが生まれ、いま何を選べるか。
-              </p>
-              <p class="small">矢印キーで進む。スライド内のボタンはデモで、ページは進まない。</p>
+              <p class="lede">変数、関数、querySelector がわかれば読めます。</p>
+              <p class="small">矢印キーで進む。スライドのボタンはデモで、ページは進みません。</p>
             </div>
             <svg class="title-art" viewBox="0 0 300 360" aria-hidden="true">
               <path d="M150 78v36M150 162v36M110 246h80" stroke="#2c3e4b" stroke-width="1.5" />
@@ -54,50 +52,50 @@
 
         <section>
           <p class="kicker"><span>00</span>導入</p>
-          <h2>今日のあと、説明できること</h2>
+          <h2>読み終えたら、この4つを言えます</h2>
           <ul class="checks">
-            <li><i>01</i><span>DOMはHTMLの文字列ではなく、ブラウザが持つ文書のオブジェクト木である。</span></li>
-            <li><i>02</i><span>画面更新はスタイル、レイアウト、ペイント、合成に分かれ、読み書きの順でコストが変わる。</span></li>
-            <li><i>03</i><span>仮想DOMの仕事は「速いDOM操作」ではなく、宣言したUIと実DOMの差を埋めることである。</span></li>
-            <li><i>04</i><span>ほかに、コンパイル（Svelte）と細かい購読（Solid、Vue Vapor）がある。</span></li>
+            <li><i>01</i><span>DOMは、ブラウザがHTMLから作る要素の家系図です。</span></li>
+            <li><i>02</i><span>画面の更新は、測る、塗る、重ねる、に分かれます。</span></li>
+            <li><i>03</i><span>仮想DOMは、設計図を比べて、差だけ直すやり方です。</span></li>
+            <li><i>04</i><span>実行前に直す、変わった値だけ直す、という別のやり方もあります。</span></li>
           </ul>
         </section>
 
         <section>
-          <p class="kicker"><span>00</span>導入</p>
-          <h2>アジェンダ</h2>
-          <ol>
-            <li>DOMとは</li>
-            <li>レンダリングパイプライン</li>
-            <li>素のDOM操作の課題</li>
-            <li>仮想DOM、key、差分の考え方</li>
-            <li>ミニ仮想DOMを実装して動かす</li>
-            <li>「仮想DOMは速い」はどこまで本当か</li>
-            <li>Svelte、Solid、Vue Vapor</li>
-          </ol>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>DOMは、要素の家系図です</h2>
+          <p class="analogy"><b>DOM</b>Document Object Model。ブラウザがHTMLを読み込んで作る、要素の木構造の地図です。</p>
+          <p>親がいて、その下に子がいます。画面はこの木を見て描きます。</p>
         </section>
 
         <section>
           <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>ブラウザは文字列を描かない</h2>
-          <div class="cols">
-            <ol>
-              <li>バイト列を文字へ復号する</li>
-              <li>開始タグ、テキスト、終了タグへ切る</li>
-              <li>トークンからノードを積み、木にする</li>
-              <li><code>document</code> がその木の入口になる</li>
-            </ol>
-            <div class="stack">
-              <p class="callout">HTMLパーサは、整形式でなくても木を修復しながら作る。XMLのように失敗させて終わらせるパーサではない。</p>
-              <p class="callout teal"><code>defer</code> も <code>async</code> もなく、<code>type=module</code> でもない script は、その位置でパースを止めて実行される。</p>
-              <p class="small">画面向けのCSSは、通常、CSSOMが揃うまで最初の描画を待つ。あとから来た規則で、塗った結果を捨てたくないため。</p>
-            </div>
-          </div>
+          <h2>HTMLは文字列です。描くのは木です</h2>
+          <p>ファイルに書いてあるHTMLは、ただのテキストです。</p>
+          <p class="callout">ブラウザはそれを読んで家系図にします。私たちが <code>querySelector</code> で触るのは、その木です。</p>
         </section>
 
         <section>
           <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>小さな文書と、その木</h2>
+          <h2>パースは、文字列を部品に分けることです</h2>
+          <ul class="checks">
+            <li><i>01</i><span>バイト列を文字にする</span></li>
+            <li><i>02</i><span>タグと文章に切る</span></li>
+            <li><i>03</i><span>親子の木に積む</span></li>
+            <li><i>04</i><span><code>document</code> がその入口になる</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>タグが少しくずれても、木はできます</h2>
+          <p>ブラウザは、直しながら読みます。</p>
+          <p class="callout">XMLのように「間違いだから中止」はしません。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>小さいHTMLは、こう木になります</h2>
           <div class="cols">
             <pre><code class="language-html" data-trim data-noescape>
 &lt;body&gt;
@@ -113,61 +111,96 @@
                   <div><span class="node el">body</span></div>
                   <div class="branch">
                     <div><span class="node el">p.lead</span></div>
-                    <div class="branch">
-                      <div><span class="node text">#text こんにちは</span></div>
-                    </div>
+                    <div class="branch"><span class="node text">#text こんにちは</span></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <p class="callout">ソースの改行もテキストノードになることがある。<code>children</code> は要素だけ。<code>childNodes</code> はテキストも含む。</p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>ノードの種類</h2>
-          <table>
-            <thead>
-              <tr><th>種類</th><th>例</th><th>よく触るAPI</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Element</td><td><code>div</code>、<code>p</code></td><td><code>querySelector</code>、<code>classList</code></td></tr>
-              <tr><td>Text</td><td>こんにちは</td><td><code>textContent</code>、<code>nodeValue</code></td></tr>
-              <tr><td>Comment</td><td>コメント</td><td>通常は触らない</td></tr>
-              <tr><td>Document</td><td><code>document</code></td><td><code>createElement</code></td></tr>
-              <tr><td>DocumentFragment</td><td>一時的な親</td><td>溜めてから一度に挿入</td></tr>
-              <tr><td>DocumentType</td><td><code>&lt;!DOCTYPE html&gt;</code></td><td>ほぼ触らない</td></tr>
-            </tbody>
-          </table>
-          <p class="callout">
-            属性は子ノードではない。<code>Attr</code> はノードだが、<code>childNodes</code> には並ばない。
-            <code>querySelectorAll</code> の <code>NodeList</code> は静的。<code>getElementsByTagName</code> の <code>HTMLCollection</code> はライブで、後からのDOM変更が結果に映る。
-          </p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>探す、作る、つなぐ</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
-const list = document.querySelector("#notes");
-const item = document.createElement("li");
-item.textContent = "DOMノードを足す";
-list.appendChild(item);
-            </code></pre>
-            <ul>
-              <li><code>querySelector</code> は最初の1件。無ければ <code>null</code>。</li>
-              <li><code>textContent</code> は文字列のまま入れる。<code>innerHTML</code> はマークアップとして解釈するので、信頼できない文字列には使わない。</li>
-              <li><code>appendChild</code> は、すでに木にあるノードを渡すと移動になる。</li>
-              <li><code>DocumentFragment</code> に溜めて親へ足すと、断片自体は残らず、子だけが移る。</li>
-            </ul>
-          </div>
         </section>
 
         <section>
           <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>ボタンでノードを足す</h2>
+          <h2>ノードは、木の上の点です</h2>
+          <p>ノード（node）。タグの箱と、中の文字は別の点です。</p>
+          <table>
+            <thead>
+              <tr><th>名前</th><th>日常の言葉</th><th>例</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Element</td><td>タグの箱</td><td><code>p</code>、<code>div</code></td></tr>
+              <tr><td>Text</td><td>箱の中の文字</td><td>こんにちは</td></tr>
+              <tr><td>Document</td><td>木全体の入口</td><td><code>document</code></td></tr>
+              <tr><td>Comment</td><td>画面に出ないメモ</td><td>HTMLコメント</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2><code>children</code> は、子の要素だけです</h2>
+          <p><code>childNodes</code> は、文字やコメントも含みます。</p>
+          <p class="callout">ソースの改行も、文字のノードになることがあります。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2><code>class</code> は、子どもではありません</h2>
+          <p>属性（attribute）は、箱に貼ったラベルです。</p>
+          <p class="callout">家系図の子としては並びません。<code>classList</code> や <code>getAttribute</code> で触ります。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>探す関数は、木から1件取ります</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
+const list = document.querySelector("#notes"); // 最初の1件を探す
+          </code></pre>
+          <p class="callout">見つからなければ <code>null</code>（何もない、という値）です。API（木を触る関数のこと）の入口です。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>作って、文字を入れて、つなぎます</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
+const list = document.querySelector("#notes"); // リストを探す
+const item = document.createElement("li"); // 空の li を作る
+item.textContent = "新しい行"; // 文字として入れる
+list.appendChild(item); // 末尾につなぐ
+          </code></pre>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2><code>textContent</code> は、文字のまま入れます</h2>
+          <p><code>innerHTML</code> は、文字列をHTMLとして解釈します。</p>
+          <p class="callout">人からもらった文字列は <code>textContent</code> にします。HTMLとして入れると、意図しないタグになります。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>探した一覧には、2種類あります</h2>
+          <ul class="checks">
+            <li><i>01</i><span><code>querySelectorAll</code> は、その瞬間のコピーです。</span></li>
+            <li><i>02</i><span><code>getElementsByTagName</code> は、その後の変化も映します。</span></li>
+            <li><i>03</i><span>コピーを静的、映る方をライブと呼びます。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>次のボタンで、見えるものはこれです</h2>
+          <ul class="checks">
+            <li><i>01</i><span>文字を入れて「追加」。末尾に1行増えます。</span></li>
+            <li><i>02</i><span>その行をクリック。打ち消し線が付きます。</span></li>
+            <li><i>03</i><span>空のまま「追加」。行は増えません。</span></li>
+            <li><i>04</i><span>中身は、要素を作って末尾につなぐ操作です。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>押して、行が増えるのを見てください</h2>
           <div class="cols">
             <div class="panel mid sandbox">
               <form id="composer">
@@ -179,407 +212,245 @@ list.appendChild(item);
                 <li>appendChild</li>
               </ul>
             </div>
-            <div>
-              <p>追加は <code>createElement</code> と <code>appendChild</code>。行のクリックで打ち消し線。</p>
-              <p class="callout teal">リスナーは <code>ul</code> に1つだけ。後から足した行にも効く。次のスライドがその仕組み。</p>
-              <p class="small">最初の2行はHTMLに書いてある。空文字は足さない。</p>
-            </div>
+            <p class="callout teal">最初の2行はHTMLに書いてあります。増えた行も、クリックで線が付きます。</p>
           </div>
         </section>
 
-        <section class="dense">
+        <section>
           <p class="kicker"><span>01</span>DOMとは</p>
-          <h2>イベントは木を伝わる</h2>
-          <div class="cols">
-            <div>
-              <div class="cols-3">
-                <div class="panel alt"><h3>capture</h3><p class="small">窓の外から、登録した親を通って対象へ降りる。第3引数 <code>true</code>。</p></div>
-                <div class="panel mid"><h3>target</h3><p class="small">実際にイベントが起きたノード。</p></div>
-                <div class="panel ok"><h3>bubble</h3><p class="small">対象から親へ上がる。<code>click</code> はここを通る。</p></div>
-              </div>
-              <p class="small">すべてが上がるわけではない。<code>focus</code> と <code>scroll</code> はバブリングしない。<code>focusin</code> はする。</p>
-            </div>
-            <div>
-              <pre><code class="language-javascript" data-trim data-noescape>
-list.addEventListener("click", (event) => {
-  const origin = event.target instanceof Element
-    ? event.target
-    : event.target.parentElement;
-  const item = origin && origin.closest("li");
-  if (!item || !list.contains(item)) return;
-  item.classList.toggle("done");
-});
-              </code></pre>
-              <p class="small">前のデモはこのリスナー。委任のルートの外で見つかった <code>li</code> は無視する。</p>
-            </div>
-          </div>
+          <h2>クリックは、親へ上がっていきます</h2>
+          <p class="analogy"><b>たとえ</b>部屋で手を挙げると、その階の人にも聞こえます。これをバブリング（bubbling、親へ上がること）と呼びます。</p>
+          <p><code>click</code> は上がります。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>02</span>パイプライン</p>
-          <h2>ピクセルまでの段</h2>
-          <ol class="pipe">
-            <li><small>01</small><b>DOM</b><em>HTMLをパースした木</em></li>
-            <li><small>02</small><b>CSSOM</b><em>CSSをパースした木</em></li>
-            <li><small>03</small><b>Render</b><em>スタイルを当て、描くノードを決める</em></li>
-            <li><small>04</small><b>Layout</b><em>箱の位置と寸法</em></li>
-            <li><small>05</small><b>Paint</b><em>レイヤにピクセルを塗る</em></li>
-            <li><small>06</small><b>Composite</b><em>レイヤを重ねてフレームにする</em></li>
-          </ol>
-          <p class="callout">フレームのたびに全部は走らない。変更の種類によって、途中の段だけが再実行される。</p>
-        </section>
-
-        <section>
-          <p class="kicker"><span>02</span>パイプライン</p>
-          <h2>レンダーツリーに入るもの</h2>
-          <div class="cols">
-            <div class="panel ok">
-              <h3>箱を作る</h3>
-              <ul>
-                <li>通常の要素</li>
-                <li><code>visibility: hidden</code>。見えないが、場所は取る</li>
-                <li><code>opacity: 0</code>。場所を取り、透明として合成できる</li>
-              </ul>
-            </div>
-            <div class="panel hot">
-              <h3>箱を作らない</h3>
-              <ul>
-                <li><code>display: none</code></li>
-                <li><code>head</code> の <code>meta</code> や <code>title</code></li>
-                <li><code>script</code></li>
-              </ul>
-            </div>
-          </div>
-          <p class="small">「レンダーツリー」は教材用の対応関係。Blink のレイアウトツリーなどはもっと細かい。教えるときの骨格としてはこれで足りる。</p>
-        </section>
-
-        <section>
-          <p class="kicker"><span>02</span>パイプライン</p>
-          <h2>どこで仕事が起きるか</h2>
-          <div class="cols-3">
-            <div class="panel mid">
-              <h3>Layout</h3>
-              <p class="small">箱の幅、高さ、位置。幅や文字量の変更がきっかけになりやすい。文書の広い範囲を再計算しがち。</p>
-            </div>
-            <div class="panel hot">
-              <h3>Paint</h3>
-              <p class="small">文字、色、影、画像をレイヤに描く。塗る面積と効果が効く。</p>
-            </div>
-            <div class="panel alt">
-              <h3>Composite</h3>
-              <p class="small"><code>transform</code> と <code>opacity</code> は、多くの場合レイアウトとペイントを飛ばしてここで済む。例外はある。</p>
-            </div>
-          </div>
-          <p class="callout">どれが支配的かはページによる。この資料にベンチマークは置かない。見るなら DevTools の Performance とレイヤ。</p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>02</span>パイプライン</p>
-          <h2>レイアウトスラッシング</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
-for (const el of rows) {
-  const width = el.offsetWidth;
-  el.style.width = width + 8 + "px";
-}
-            </code></pre>
-            <div>
-              <p>幾何を読むAPIは、レイアウトが汚れていればその場で計算してから値を返す。ループで「書いて、読む」を繰り返すと、その計算が何度も走る。</p>
-              <p class="callout coral">これをレイアウトスラッシングと呼ぶ。読みの例は <code>offsetWidth</code> と <code>getBoundingClientRect()</code>。完全な一覧ではない。</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>02</span>パイプライン</p>
-          <h2>読み終えてから、書く</h2>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>だから、親がまとめて聞けます</h2>
           <pre><code class="language-javascript" data-trim data-noescape>
-const widths = rows.map((el) => el.offsetWidth);
-for (let i = 0; i < rows.length; i++) {
-  rows[i].style.width = widths[i] + 8 + "px";
+list.addEventListener("click", (event) => {
+  const item = event.target.closest("li"); // 近い li を探す
+  if (!item || !list.contains(item)) return; // 外なら無視
+  item.classList.toggle("done"); // 打ち消し線
+});
+          </code></pre>
+          <p class="small">これをイベント委譲（親が子の分まで聞くこと）と呼びます。前のデモは、リストに耳が1つだけです。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>01</span>DOMとは</p>
+          <h2>全部の出来事が、上がるわけではありません</h2>
+          <ul class="checks">
+            <li><i>01</i><span><code>click</code> は親へ上がります。</span></li>
+            <li><i>02</i><span><code>focus</code> と <code>scroll</code> は上がりません。</span></li>
+            <li><i>03</i><span>逆に、親から子へ降りる向きもあります。</span></li>
+            <li><i>04</i><span>降りる向きをキャプチャ（capture）と呼びます。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>描画は、木を画面の点にすることです</h2>
+          <p>この作業の流れを、パイプライン（pipeline、順番に並んだ作業）と呼びます。</p>
+          <p class="callout">フレームごとに、全部の段が走るとは限りません。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>まず、2つの木を合わせます</h2>
+          <div class="cols-3">
+            <div class="panel ok"><h3>DOM</h3><p class="small">HTMLから作った、要素の木です。</p></div>
+            <div class="panel mid"><h3>CSSOM</h3><p class="small">CSS Object Model。CSSから作った、スタイルの木です。</p></div>
+            <div class="panel alt"><h3>描く木</h3><p class="small">実際に箱を作るものだけを集めた木です。レンダーツリーとも呼びます。</p></div>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>そのあと、測って、塗って、重ねます</h2>
+          <div class="cols-3">
+            <div class="panel mid"><h3>レイアウト</h3><p class="small">箱の位置と大きさです。リフロー（測り直し）とも呼びます。</p></div>
+            <div class="panel hot"><h3>ペイント</h3><p class="small">色、文字、影を層に塗ることです。</p></div>
+            <div class="panel alt"><h3>合成</h3><p class="small">層を重ねて1枚の画面にします。コンポジット（composite）とも呼びます。</p></div>
+          </div>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>見えない、にも種類があります</h2>
+          <ul class="checks">
+            <li><i>01</i><span><code>display: none</code> は、箱を作りません。</span></li>
+            <li><i>02</i><span><code>visibility: hidden</code> は、場所を取り、見えません。</span></li>
+            <li><i>03</i><span><code>opacity: 0</code> は、場所を取り、透明です。</span></li>
+            <li><i>04</i><span><code>head</code> や <code>script</code> も、画面の箱にはなりません。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>リフローは、部屋の測り直しです</h2>
+          <p class="analogy"><b>たとえ</b>家具を動かしたら、部屋全体の寸法を測り直すことがあります。幅や文字量を変えると、この測り直しが起きやすいです。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>塗るのと、シートをずらすのは別です</h2>
+          <p>ペイントは、壁に色を塗ることです。合成は、透明シートを重ねることです。</p>
+          <p class="callout"><code>transform</code> と <code>opacity</code> は、多くの場合シートを動かすだけで足ります。例外はあるので、DevToolsの層で見ます。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>測って、動かして、また測ると重いです</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
+for (const el of rows) {
+  const width = el.offsetWidth; // 幅を聞く。汚れていたら測り直す
+  el.style.width = width + 8 + "px"; // 幅を変える。次の読みで再計測
 }
           </code></pre>
-          <p class="callout teal">フレームの先頭では、前回のレイアウト結果をまだ読める。汚す前に読み、書きはまとめる。すでに汚したあとに読む必要があるなら、次のフレームへ分ける。</p>
+          <p class="small">この繰り返しをレイアウトスラッシング（layout thrashing、測り直しの連打）と呼びます。<code>getBoundingClientRect()</code> も同じ種類の読みです。</p>
         </section>
 
-        <section class="dense">
-          <p class="kicker"><span>03</span>素のDOM</p>
-          <h2>手順を、全部書く</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
+        <section>
+          <p class="kicker"><span>02</span>描画</p>
+          <h2>先に全部測り、あとで動かします</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
+const widths = rows.map((el) => el.offsetWidth); // 先に測る
+for (let i = 0; i < rows.length; i++) {
+  rows[i].style.width = widths[i] + 8 + "px"; // 測ったあとで書く
+}
+          </code></pre>
+          <p class="callout teal">フレームの先頭では、前回の寸法をまだ読めます。数字の一般論は置きません。見るなら DevTools の Performance です。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>03</span>手作業</p>
+          <h2>手順を、全部自分で書きます</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
 function render(state) {
   if (state.status === "loading") {
-    root.textContent = "読み込み中";
+    root.textContent = "読み込み中"; // 文章だけにする
     return;
   }
-  const ul = document.createElement("ul");
-  for (const name of state.names) {
-    const li = document.createElement("li");
-    li.textContent = name;
-    ul.appendChild(li);
-  }
-  root.replaceChildren(ul);
+  const ul = document.createElement("ul"); // リストを作る
+  root.replaceChildren(ul); // 中身をそのリストと入れ替える
 }
-            </code></pre>
-            <ul>
-              <li>分岐のたびに、DOMへの手順が要る。</li>
-              <li>前回のノードを残すか捨てるかも、自分で決める。</li>
-              <li>この関数は毎回リストを作り直す。差分はまだ無い。</li>
-              <li>小さな画面なら、これで足りる。</li>
-            </ul>
-          </div>
+          </code></pre>
+          <p class="small">小さい画面なら、これで足ります。分岐のたびに、DOMへの手順が要ります。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>03</span>素のDOM</p>
-          <h2>状態と画面が、二箇所にある</h2>
-          <div class="cols">
-            <div class="panel hot">
-              <h3>配列だけ更新した</h3>
-              <p><code>names</code> から B を消した。対応する <code>li</code> の削除を書き忘れた。画面には B が残る。</p>
-            </div>
-            <div class="panel mid">
-              <h3>DOMだけ更新した</h3>
-              <p>入力欄の文字列は要素が持っている。変数は古いまま。次の保存は、画面に無い値を送る。</p>
-            </div>
-          </div>
-          <p class="callout">バグの見た目は毎回違う。共通の原因は、正とされる状態が二箇所にあること。</p>
+          <p class="kicker"><span>03</span>手作業</p>
+          <h2>名簿と座席表が、別々に古くなります</h2>
+          <p class="analogy"><b>たとえ</b>名簿から人を消して、座席表を消し忘れると、いない人が座ったままです。</p>
+          <p>配列から消したのに <code>li</code> が残る。入力欄の文字だけが新しい。正が2箇所にあります。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>03</span>素のDOM</p>
-          <h2>UIは、状態の関数</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
+          <p class="kicker"><span>03</span>手作業</p>
+          <h2>画面は、データの式で書けます</h2>
+          <pre><code class="language-javascript" data-trim data-noescape>
 function view(state) {
-  return h("ul", {}, state.names.map((name) =>
-    h("li", {}, name)
-  ));
+  // 今の名前ごとに、li の設計図を返す
+  return state.names.map((name) => h("li", {}, name));
 }
-            </code></pre>
-            <div>
-              <p>書くのは「今の状態なら、木はこう」という値。DOMへの手順は、次の段が引き受ける。</p>
-              <p class="callout">仮想DOMはこの式の実装の一つであって、式そのものではない。</p>
-            </div>
-          </div>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>04</span>仮想DOM</p>
-          <h2>実ノードの前に、ただのオブジェクト</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
-const vnode = {
-  tag: "p",
-  props: { class: "lead" },
-  children: [
-    { tag: "#text", props: {}, children: [], text: "こんにちは" },
-  ],
-};
-
-h("p", { class: "lead" }, "こんにちは");
-            </code></pre>
-            <div>
-              <p>プレーンなオブジェクトなので、ブラウザのノードではない。比較も複製も、普通の値として書ける。比較そのものにもCPUは使う。</p>
-              <p class="callout teal">JSXの <code>&lt;p class="lead"&gt;</code> は、ビルドするとこの種の関数呼び出しになる。JSXは記法であり、DOMでも仮想DOMでもない。</p>
-            </div>
-          </div>
+          </code></pre>
+          <p class="callout">これを UI = f(state) と書きます。仮想DOMは、この式のやり方の一つです。式そのものではありません。</p>
         </section>
 
         <section>
           <p class="kicker"><span>04</span>仮想DOM</p>
-          <h2>宣言して、比べて、反映する</h2>
-          <div class="cols-3">
-            <div class="panel ok">
-              <h3>1. view(state)</h3>
-              <p class="small">今の状態から、新しい仮想木を作る。</p>
-            </div>
-            <div class="panel mid">
-              <h3>2. diff</h3>
-              <p class="small">前回の仮想木と歩き、どこが違うかを決める。再調整（reconciliation）とも呼ぶ。</p>
-            </div>
-            <div class="panel alt">
-              <h3>3. patch</h3>
-              <p class="small">決めた分だけ、実DOMを更新する。</p>
-            </div>
-          </div>
-          <p class="callout">初回は比較相手が無い。仮想木を、そのまま実ノードに展開する。</p>
+          <h2>仮想DOMは、ただの設計図です</h2>
+          <p class="analogy"><b>たとえ</b>設計図を2枚比べて、変わった家具だけ直します。仮想DOM（virtual DOM）は、本物の要素の前に置くJavaScriptのオブジェクトです。</p>
         </section>
 
         <section>
           <p class="kicker"><span>04</span>仮想DOM</p>
-          <h2>同じ型なら残し、違う型なら捨てる</h2>
-          <div class="cols">
-            <div class="panel ok">
-              <h3>タグが同じ</h3>
-              <p>ノードは残す。変わった属性とテキストだけ書き、子へ降りる。</p>
-            </div>
-            <div class="panel hot">
-              <h3>タグが違う</h3>
-              <p>その部分木は捨てて作り直す。フォーカスや、入力途中の文字列はDOMが持っていたものなので消える。</p>
-            </div>
-          </div>
-          <p class="small">これは最小の編集手順の証明ではない。実装が採用した規則。Reactの文書は、型が違う要素は別の木を生む、と仮定している。</p>
-        </section>
-
-        <section>
-          <p class="kicker"><span>04</span>仮想DOM</p>
-          <h2>keyは、リスト項目の同一性</h2>
-          <div class="cols">
-            <pre><code class="language-javascript" data-trim data-noescape>
-items.map((item) =>
-  h("li", { key: item.id }, item.name)
-);
-            </code></pre>
-            <ul>
-              <li>無いと、多くの実装は同じ位置の子どうしを対応づける。</li>
-              <li>挿入や並べ替えで、別の項目が同じDOMノードを使う。</li>
-              <li>チェック、入力途中の文字、内部状態が隣の項目へずれる。</li>
-              <li>兄弟の中で安定して一意ならよい。添字は、並びが変わらないときだけ安全。</li>
-              <li>Reactでは、別の親へ移った子は key では追わない。</li>
-            </ul>
-          </div>
-        </section>
-
-        <section>
-          <p class="kicker"><span>04</span>仮想DOM</p>
-          <h2>最適差分は重い。なので探さない</h2>
-          <div class="cols">
-            <div class="panel hot">
-              <h3>木の編集距離</h3>
-              <p>ある木を別の木へ変える最小手順は、一般的なアルゴリズムだと <strong>O(n³)</strong>。n はノード数。</p>
-            </div>
-            <div class="panel ok">
-              <h3>Reactのヒューリスティック</h3>
-              <p>最小手順は探さない。<strong>O(n)</strong> で、次の2つを仮定する。</p>
-              <ol>
-                <li>型が違う要素は、別の木を生む。</li>
-                <li>開発者が <code>key</code> で、安定な子を示せる。</li>
-              </ol>
-            </div>
-          </div>
-          <p class="source">
-            現行のReactはこの処理を Fiber で小さな仕事に分けて進める。仮定の説明は legacy の reconciliation 文書にあり、そこには古いクラスコンポーネントのライフサイクルも出てくる。リストと key の現行の説明は react.dev。
-          </p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>05</span>ミニ実装</p>
-          <h2>hは、仮想ノードを返す</h2>
+          <h2>設計図は、ただのオブジェクトです</h2>
           <pre><code class="language-javascript" data-trim data-noescape>
+const vnode = { tag: "p", props: { class: "lead" }, text: "こんにちは" };
 function h(tag, props, ...children) {
-  return {
-    tag,
-    props: props ?? {},
-    children: children.flat().map(normalize),
-    el: null,
-  };
-}
-
-function normalize(child) {
-  if (child != null && typeof child === "object") return child;
-  return {
-    tag: "#text",
-    props: {},
-    children: [],
-    text: String(child),
-    el: null,
-  };
+  return { tag, props: props ?? {}, children }; // 設計図の1枚を返す
 }
           </code></pre>
-          <p class="small">このあとの実装とデモは、同じ関数を使っている。本番のReact要素とは別物で、説明のための最小実装。</p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>05</span>ミニ実装</p>
-          <h2>初回は、木を実ノードにする</h2>
-          <pre><code class="language-javascript" data-trim data-noescape>
-function createDom(vnode) {
-  if (vnode.tag === "#text") {
-    vnode.el = document.createTextNode(vnode.text ?? "");
-    return vnode.el;
-  }
-  const el = document.createElement(vnode.tag);
-  setProps(el, {}, vnode.props);
-  for (const child of vnode.children) el.appendChild(createDom(child));
-  vnode.el = el;
-  return el;
-}
-
-function setProps(el, prev, next) {
-  const names = new Set([...Object.keys(prev), ...Object.keys(next)]);
-  for (const name of names) {
-    if (name === "key") continue;
-    if (prev[name] === next[name]) continue;
-    const value = next[name];
-    if (value == null || value === false) el.removeAttribute(name);
-    else el.setAttribute(name, value === true ? "" : String(value));
-  }
-}
-          </code></pre>
-          <p class="small"><code>key</code> は同一性の印なので、属性としては出さない。</p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>05</span>ミニ実装</p>
-          <h2>同じ位置なら、ノードを残す</h2>
-          <pre><code class="language-javascript" data-trim data-noescape>
-function patch(parent, prev, next, mode) {
-  if (!prev) return parent.appendChild(createDom(next));
-  if (!next) return prev.el.remove();
-  const sameKey = mode === "key" ? prev.props.key === next.props.key : true;
-  if (prev.tag !== next.tag || !sameKey) {
-    parent.replaceChild(createDom(next), prev.el);
-    return;
-  }
-  if (next.tag === "#text") {
-    if (prev.text !== next.text) prev.el.nodeValue = next.text;
-    next.el = prev.el;
-    return;
-  }
-  next.el = prev.el;
-  setProps(next.el, prev.props, next.props);
-  patchChildren(next.el, prev.children, next.children, mode);
-}
-          </code></pre>
-          <p class="small"><code>mode</code> が <code>"index"</code> のとき、<code>sameKey</code> は常に真。key が違っても、同じ位置のノードを使い回す。</p>
-        </section>
-
-        <section class="dense">
-          <p class="kicker"><span>05</span>ミニ実装</p>
-          <h2>keyがある子は、引いてから動かす</h2>
-          <pre><code class="language-javascript" data-trim data-noescape>
-function patchChildren(parent, prevs, nexts, mode) {
-  if (mode !== "key") {
-    const length = Math.max(prevs.length, nexts.length);
-    for (let i = 0; i < length; i++) patch(parent, prevs[i], nexts[i], mode);
-    return;
-  }
-  const prevByKey = new Map();
-  for (const node of prevs) {
-    if (node.props.key != null) prevByKey.set(node.props.key, node);
-  }
-  const used = new Set();
-  nexts.forEach((next, index) => {
-    const key = next.props.key;
-    const prev = key != null ? prevByKey.get(key) : prevs[index];
-    if (prev) used.add(prev);
-    patch(parent, prev, next, mode);
-  });
-  for (const prev of prevs) {
-    if (!used.has(prev) && prev.el) prev.el.remove();
-  }
-  for (const next of nexts) parent.appendChild(next.el);
-}
-          </code></pre>
-          <p class="small">同じ親の子は、全部 key を持つか、まったく持たないか、を仮定している。最後の <code>appendChild</code> は、既存ノードを新しい順へ移動する。</p>
+          <p class="small">JSXは、この設計図をHTML風に書く記法です。DOMそのものではありません。デモは、この形を前回の木と見比べています。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>05</span>ミニ実装</p>
-          <h2>チェックは、仮想DOMの外に残る</h2>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2>作業は、作る、比べる、直す、です</h2>
+          <ul class="checks">
+            <li><i>01</i><span>render。今のデータから、新しい設計図を作ります。</span></li>
+            <li><i>02</i><span>diff。前の設計図と見比べます。再調整（reconciliation）とも呼びます。</span></li>
+            <li><i>03</i><span>patch。変わったところだけ、本物のDOMを直します。</span></li>
+            <li><i>04</i><span>初回だけは比べる相手がいないので、そのまま要素にします。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2>同じ箱は残し、違う箱は捨てます</h2>
+          <ul class="checks">
+            <li><i>01</i><span>タグが同じなら、箱は残します。</span></li>
+            <li><i>02</i><span>直すのは、変わったラベルと文字です。</span></li>
+            <li><i>03</i><span>タグが違うなら、その部分は作り直します。</span></li>
+            <li><i>04</i><span>入力途中の文字は、箱が持っていたので消えます。</span></li>
+          </ul>
+          <p class="small">これは最短の直し方の証明ではありません。ライブラリが選んだ規則です。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2><code>key</code> は、座席ではなく名札です</h2>
+          <p class="analogy"><b>key</b>リストの各項目に付ける、前後で同じものだと示す名前です。並べ替えても、名札の人が自分のチェックを持っていきます。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2>名札がないと、席の位置で同一視します</h2>
+          <ul class="checks">
+            <li><i>01</i><span>多くの実装は、同じ位置の子を同じものだと思います。</span></li>
+            <li><i>02</i><span>途中に足すと、隣の項目の入力がずれます。</span></li>
+            <li><i>03</i><span>配列の添字は、並びが変わらないときだけ安全です。</span></li>
+            <li><i>04</i><span>Reactでは、別の親へ移った子は key では追いません。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2>最小の手数を探すと、重いです</h2>
+          <p>木を最小の手数で別の木へ変える計算は、一般的な方法だと <strong>O(n³)</strong> です。</p>
+          <p class="callout">n はノードの数です。手間は、その3乗で増えます。Reactはその最小手数を探しません。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>04</span>仮想DOM</p>
+          <h2>Reactの近道は、2つの仮定です</h2>
+          <ul class="checks">
+            <li><i>01</i><span>手間は <strong>O(n)</strong>。ノードの数にほぼ比例します。</span></li>
+            <li><i>02</i><span>型が違う要素は、別の木を生む、と仮定します。</span></li>
+            <li><i>03</i><span><code>key</code> で、安定な子を示せると仮定します。</span></li>
+            <li><i>04</i><span>今の実装は Fiber。仕事を小分けにして進める仕組みです。</span></li>
+          </ul>
+          <p class="source">仮定の説明は React の reconciliation 文書です。リストと key の今の説明は react.dev です。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>05</span>デモ</p>
+          <h2>次の画面では、チェックの行き先を見ます</h2>
+          <ul class="checks">
+            <li><i>01</i><span>左右の「みかん」に、チェックを入れます。</span></li>
+            <li><i>02</i><span>「先頭に追加」を押します。</span></li>
+            <li><i>03</i><span>左は、チェックが2番目の位置に残ります。</span></li>
+            <li><i>04</i><span>右は、チェックがみかんについていきます。</span></li>
+          </ul>
+          <p class="small">チェックは設計図に書いていません。本物の要素が覚えています。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>05</span>デモ</p>
+          <h2>左は位置、右は名札です</h2>
           <p class="order">データの順: <span id="order"></span></p>
-          <div class="demo-grid cols">
+          <div class="cols">
             <div class="panel hot">
               <h3>位置で対応</h3>
               <div id="index-root"></div>
@@ -594,185 +465,164 @@ function patchChildren(parent, prevs, nexts, mode) {
             <button class="btn ghost" id="swap" type="button">上の2つを入れ替え</button>
             <button class="btn ghost" id="reset-demo" type="button">リセット</button>
           </div>
-          <p class="small">ラベルと番号は両方ともデータどおりに更新される。チェックだけがDOMノードの状態。左は位置に残り、右は項目についてくる。両方にチェックしてから操作する。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>06</span>誤解</p>
-          <h2>「仮想DOMは速い」は、比較相手が要る</h2>
-          <div class="cols-3">
-            <div class="panel hot">
-              <h3>手で必要箇所だけ</h3>
-              <p class="small">変更箇所だけを命令的に触るコードより、差分計算の分だけ仕事が増えることがある。</p>
-            </div>
-            <div class="panel ok">
-              <h3>毎回捨てて作る</h3>
-              <p class="small">親を空にして作り直すコードよりは、壊さなくてよいノードを残しやすい。</p>
-            </div>
-            <div class="panel mid">
-              <h3>その後のレイアウト</h3>
-              <p class="small">速さを決めるのは差分の有無だけではない。再計算の範囲、key、ブラウザが受けるレイアウトの量も効く。</p>
-            </div>
-          </div>
-          <p class="callout">仮想DOMは、速さを保証するデータ構造ではない。React Compiler はメモ化で再レンダーを減らすもので、再調整をやめる機能ではない。</p>
-        </section>
-
-        <section>
-          <p class="kicker"><span>06</span>誤解</p>
-          <h2>価値は、宣言的な更新</h2>
+          <p class="kicker"><span>06</span>速さ</p>
+          <h2>「速い」は、比べる相手が要ります</h2>
           <ul class="checks">
-            <li><i>01</i><span>画面を、状態の関数として書ける。</span></li>
-            <li><i>02</i><span>更新漏れの責任を、差分の規則へ移せる。</span></li>
-            <li><i>03</i><span>同じ宣言を、DOM以外へ渡せる。Reactの要素木は React Native ではネイティブのビューに写される。</span></li>
-            <li><i>04</i><span>「仮想DOM」という語はブラウザ実装を指すことが多い。要素木という考え方は、DOM専用ではない。</span></li>
+            <li><i>01</i><span>必要な場所だけ手で触るより、比べる分だけ増えることがあります。</span></li>
+            <li><i>02</i><span>毎回捨てて作るよりは、残せる箱を残しやすいです。</span></li>
+            <li><i>03</i><span>その後の測り直し（レイアウト）も、速さに効きます。</span></li>
+            <li><i>04</i><span>React Compiler は計算の再利用です。仮想DOMは残ります。</span></li>
           </ul>
         </section>
 
         <section>
-          <p class="kicker"><span>07</span>ほかの選択肢</p>
-          <h2>Svelteは、コンパイルする</h2>
-          <div class="cols">
-            <div>
-              <p>コンポーネントを、変わった箇所をDOMへ書く JavaScript に変換する。実行時に仮想DOMの木を差分する仕組みは持たない。</p>
-              <p>Svelte 5 の runes は、コンパイラへの記法である。<code>$state</code> は関数ではなく、コンパイラが認識する印。</p>
-              <p class="small">リストの同一性は、<code>each</code> ブロックのキー式で示す。</p>
-            </div>
-            <pre><code class="language-html" data-trim data-noescape>
-{#each items as item (item.id)}
-  &lt;li&gt;{item.name}&lt;/li&gt;
-{/each}
-            </code></pre>
-          </div>
-        </section>
-
-        <section>
-          <p class="kicker"><span>07</span>ほかの選択肢</p>
-          <h2>Solidは、購読した箇所だけ更新する</h2>
-          <ul>
-            <li>コンポーネント関数は、初回にDOMへ出すとき一度だけ実行される。状態が変わっても、関数全体は再実行されない。</li>
-            <li>シグナルを読んだ箇所だけが購読者になる。値が変わると、そのテキストや属性の更新が走る。</li>
-            <li><code>For</code> は要素の値の同一性でノードを対応づける。同じ値が別の位置に来れば、ノードを作り直さず移動できる。</li>
+          <p class="kicker"><span>06</span>速さ</p>
+          <h2>価値は、画面を式で書けることです</h2>
+          <ul class="checks">
+            <li><i>01</i><span>「今のデータなら、画面はこう」と書けます。</span></li>
+            <li><i>02</i><span>更新の抜けを、比べる規則に任せられます。</span></li>
+            <li><i>03</i><span>同じ木を、ブラウザ以外にも渡せます。</span></li>
+            <li><i>04</i><span>React Native は、その木をスマホの部品に写します。</span></li>
           </ul>
-          <p class="callout teal">木全体を仮想DOMとして差分する方式ではない。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>07</span>ほかの選択肢</p>
-          <h2>Vueは仮想DOMが既定。Vaporは別モード</h2>
-          <div class="cols">
-            <div class="panel mid">
-              <h3>Vue 3 安定版</h3>
-              <p class="small">テンプレートをレンダラ関数にし、仮想DOMでマウントし、依存が変わったら新しい木とパッチする。コンパイラは静的な部分に印を付け、実行時に見る範囲を狭める。</p>
-            </div>
-            <div class="panel alt">
-              <h3>Vapor（3.6 RC）</h3>
-              <p class="small">オプトインの別コンパイル。SFCを直接のDOM操作にする。すべてVaporのアプリは <code>createVaporApp()</code> で、仮想DOMランタイムを読み込まない、とリリースノートにある。</p>
-            </div>
-          </div>
-          <p class="source">2026年10月時点で 3.6 はリリース候補。Vapor は安定版の既定ではない。VNode や公開インスタンスに依存する機能は対象外、ともノートにある。速度の比較値は載せていない。</p>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>Svelteは、実行前に直し方を決めます</h2>
+          <p>コンパイル（compile）は、実行前に別のプログラムへ翻訳することです。</p>
+          <ul class="checks">
+            <li><i>01</i><span>変わった箇所を、DOMへ書くコードに翻訳します。</span></li>
+            <li><i>02</i><span>実行中に、設計図の木を丸ごと比べません。</span></li>
+            <li><i>03</i><span><code>$state</code> は関数ではなく、翻訳機への印です。</span></li>
+            <li><i>04</i><span>リストの名札は、<code>each</code> のキー式で示します。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>Solidは、変わった値の場所だけ直します</h2>
+          <ul class="checks">
+            <li><i>01</i><span>部品の関数は、最初の1回だけ実行されます。</span></li>
+            <li><i>02</i><span>シグナル（signal）は、変わると読んだ箇所へ知らせる値です。</span></li>
+            <li><i>03</i><span>知らせを受けた文字や属性だけが更新されます。</span></li>
+            <li><i>04</i><span><code>For</code> は、値の同一性で要素を動かせます。</span></li>
+          </ul>
+        </section>
+
+        <section>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>Vue 3の安定版は、設計図を比べます</h2>
+          <p>テンプレート（HTML風に書いた画面）を、設計図を返す関数にします。</p>
+          <p class="callout">翻訳機が「ここは動かない」と印を付けて、比べる範囲を狭めます。設計図をやめたわけではありません。</p>
+        </section>
+
+        <section>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>Vaporは、選んで使う別の方式です</h2>
+          <ul class="checks">
+            <li><i>01</i><span>実行前に、DOMを直接直すコードへ翻訳します。</span></li>
+            <li><i>02</i><span>全部その方式なら、設計図の部品を読み込みません。</span></li>
+            <li><i>03</i><span>2026年10月時点で、Vue 3.6 はリリース候補です。</span></li>
+            <li><i>04</i><span>標準ではオフです。オプトイン（自分でオンにする）です。</span></li>
+          </ul>
+          <p class="source">速度の比較値は載せていません。出典は Vue 3.6.0-rc.1 のリリースノートです。</p>
         </section>
 
         <section class="dense">
-          <p class="kicker"><span>07</span>ほかの選択肢</p>
-          <h2>何を差分し、何を書くか</h2>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>直し方の違いだけを並べます</h2>
           <table>
             <thead>
               <tr>
-                <th>方式</th>
-                <th>実行時に木を差分するか</th>
-                <th>更新が追うもの</th>
-                <th>主な記述</th>
+                <th>やり方</th>
+                <th>実行中に木を比べるか</th>
+                <th>直し方</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>素のDOM</td>
-                <td>しない</td>
-                <td>自分で選んだノード</td>
-                <td>手順</td>
+                <td>自分でDOM</td>
+                <td>比べない</td>
+                <td>触る場所を、自分で書く</td>
               </tr>
               <tr>
                 <td>React</td>
-                <td>する（Fiber）</td>
-                <td>コンポーネントの要素木</td>
-                <td>UIを返す関数</td>
+                <td>比べる</td>
+                <td>設計図の差だけ反映する</td>
               </tr>
               <tr>
                 <td>Vue 3 安定版</td>
-                <td>する。範囲はコンパイラが狭める</td>
-                <td>仮想ノード</td>
-                <td>テンプレート</td>
+                <td>比べる。範囲は翻訳時に狭める</td>
+                <td>設計図の差だけ反映する</td>
               </tr>
               <tr>
                 <td>Vue Vapor</td>
-                <td>純粋な構成ではしない</td>
-                <td>コンパイルされたDOM操作</td>
-                <td>テンプレート。3.6 RC、オプトイン</td>
+                <td>全部その方式なら比べない</td>
+                <td>翻訳したDOM操作。3.6の候補版</td>
               </tr>
               <tr>
                 <td>Svelte</td>
-                <td>しない</td>
-                <td>コンパイルされたDOM操作</td>
-                <td>テンプレート</td>
+                <td>比べない</td>
+                <td>コンパイル時に差分を決める</td>
               </tr>
               <tr>
                 <td>Solid</td>
-                <td>しない</td>
-                <td>シグナルの購読先</td>
-                <td>JSXとシグナル</td>
+                <td>比べない</td>
+                <td>値が変わった箇所だけ更新する</td>
               </tr>
             </tbody>
           </table>
-          <p class="small">この表は速さの順位ではない。</p>
+          <p class="small">この表は、速さの順位ではありません。</p>
         </section>
 
         <section>
-          <p class="kicker"><span>07</span>ほかの選択肢</p>
-          <h2>選び方</h2>
+          <p class="kicker"><span>07</span>ほかのやり方</p>
+          <h2>数字ではなく、読み方で選びます</h2>
           <ul class="checks">
-            <li><i>01</i><span>状態遷移が多い画面は、宣言的なモデルの方が更新漏れを減らしやすい。</span></li>
-            <li><i>02</i><span>ランタイムを小さく、更新箇所を購読で決めたいなら Svelte、Solid。Vapor はリリース候補として試す。</span></li>
-            <li><i>03</i><span>どれを選んでも、レイアウトスラッシングや巨大リストの設計は残る。</span></li>
-            <li><i>04</i><span>公開ベンチマークの数字では選ばない。この資料も載せていない。</span></li>
+            <li><i>01</i><span>画面の状態が多いなら、式で書く方が抜けが少ないです。</span></li>
+            <li><i>02</i><span>実行時の仕組みを小さくするなら、Svelte か Solid です。</span></li>
+            <li><i>03</i><span>Vapor は正式版の前の候補なので、試すときに選びます。</span></li>
+            <li><i>04</i><span>どのやり方でも、測り直しの設計は残ります。</span></li>
           </ul>
         </section>
 
         <section>
           <p class="kicker"><span>08</span>まとめ</p>
-          <h2>説明できるかの確認</h2>
+          <h2>もう一度、この4つです</h2>
           <ul class="checks">
-            <li><i>01</i><span>DOMはパースされた文書の木で、APIで読み書きする。</span></li>
-            <li><i>02</i><span>描画はスタイル、レイアウト、ペイント、合成に分かれ、読み書きの混在がレイアウトを同期的に走らせる。</span></li>
-            <li><i>03</i><span>仮想DOMは、UIの宣言をオブジェクトの木にし、前回との差分をDOMへ反映する手段である。</span></li>
-            <li><i>04</i><span>key は速さのスイッチではなく、リスト項目の同一性である。</span></li>
-            <li><i>05</i><span>速いから仮想DOM、ではない。Svelte、Solid、Vue Vapor は別の実装である。</span></li>
+            <li><i>01</i><span>DOMは、HTMLから作った要素の家系図です。</span></li>
+            <li><i>02</i><span>家具を動かすと、部屋を測り直すことがあります。</span></li>
+            <li><i>03</i><span>仮想DOMは、設計図の差だけを直します。</span></li>
+            <li><i>04</i><span>key は速さのスイッチではなく、項目の名札です。</span></li>
           </ul>
         </section>
 
         <section class="dense">
           <p class="kicker"><span>08</span>まとめ</p>
-          <h2>参照したもの</h2>
+          <h2>言葉の出典です</h2>
           <div class="cols">
             <ul class="links">
-              <li><a href="https://developer.mozilla.org/ja/docs/Web/API/Document_Object_Model">MDN — Document Object Model</a><small>developer.mozilla.org/ja/docs/Web/API/Document_Object_Model</small></li>
+              <li><a href="https://developer.mozilla.org/ja/docs/Web/API/Document_Object_Model">MDN — DOMとは</a><small>developer.mozilla.org/ja/docs/Web/API/Document_Object_Model</small></li>
               <li><a href="https://developer.mozilla.org/ja/docs/Web/API/Document/querySelectorAll">MDN — querySelectorAll</a><small>developer.mozilla.org/ja/docs/Web/API/Document/querySelectorAll</small></li>
-              <li><a href="https://developer.mozilla.org/ja/docs/Web/API/Node">MDN — Node</a><small>developer.mozilla.org/ja/docs/Web/API/Node</small></li>
-              <li><a href="https://developer.mozilla.org/ja/docs/Learn_web_development/Core/Scripting/Event_bubbling">MDN — イベントバブリング</a><small>developer.mozilla.org/ja/docs/Learn_web_development/Core/Scripting/Event_bubbling</small></li>
-              <li><a href="https://html.spec.whatwg.org/multipage/parsing.html">WHATWG — HTML parsing</a><small>html.spec.whatwg.org/multipage/parsing.html</small></li>
-              <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path">MDN — Critical rendering path</a><small>developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path</small></li>
-              <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work">MDN — How browsers work</a><small>developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work</small></li>
-              <li><a href="https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing">web.dev — Layout thrashing</a><small>web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing</small></li>
+              <li><a href="https://developer.mozilla.org/ja/docs/Learn_web_development/Core/Scripting/Event_bubbling">MDN — クリックは親へ上がる</a><small>developer.mozilla.org/ja/docs/Learn_web_development/Core/Scripting/Event_bubbling</small></li>
+              <li><a href="https://html.spec.whatwg.org/multipage/parsing.html">WHATWG — HTMLの読み方</a><small>html.spec.whatwg.org/multipage/parsing.html</small></li>
+              <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path">MDN — 画面になるまでの道</a><small>developer.mozilla.org/en-US/docs/Web/Performance/Guides/Critical_rendering_path</small></li>
+              <li><a href="https://developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work">MDN — ブラウザの描き方</a><small>developer.mozilla.org/en-US/docs/Web/Performance/Guides/How_browsers_work</small></li>
+              <li><a href="https://web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing">web.dev — 測り直しの連打</a><small>web.dev/articles/avoid-large-complex-layouts-and-layout-thrashing</small></li>
+              <li><a href="https://gist.github.com/paulirish/5d52fb081b3570c81e3a">測り直しを起こす読み方</a><small>gist.github.com/paulirish/5d52fb081b3570c81e3a</small></li>
             </ul>
             <ul class="links">
-              <li><a href="https://gist.github.com/paulirish/5d52fb081b3570c81e3a">Paul Irish — What forces layout</a><small>gist.github.com/paulirish/5d52fb081b3570c81e3a</small></li>
-              <li><a href="https://legacy.reactjs.org/docs/reconciliation.html">React — Reconciliation</a><small>legacy.reactjs.org/docs/reconciliation.html</small></li>
-              <li><a href="https://react.dev/learn/rendering-lists">React — Rendering Lists</a><small>react.dev/learn/rendering-lists</small></li>
-              <li><a href="https://react.dev/learn/preserving-and-resetting-state">React — Preserving and Resetting State</a><small>react.dev/learn/preserving-and-resetting-state</small></li>
+              <li><a href="https://legacy.reactjs.org/docs/reconciliation.html">React — 差分の仮定</a><small>legacy.reactjs.org/docs/reconciliation.html</small></li>
+              <li><a href="https://react.dev/learn/rendering-lists">React — リストと key</a><small>react.dev/learn/rendering-lists</small></li>
+              <li><a href="https://react.dev/learn/preserving-and-resetting-state">React — 状態を残す・捨てる</a><small>react.dev/learn/preserving-and-resetting-state</small></li>
               <li><a href="https://react.dev/learn/react-compiler">React — React Compiler</a><small>react.dev/learn/react-compiler</small></li>
-              <li><a href="https://vuejs.org/guide/extras/rendering-mechanism">Vue — Rendering Mechanism</a><small>vuejs.org/guide/extras/rendering-mechanism</small></li>
-              <li><a href="https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1">Vue 3.6.0-rc.1 — Vapor Mode</a><small>github.com/vuejs/core/releases/tag/v3.6.0-rc.1</small></li>
-              <li><a href="https://svelte.dev/docs/svelte/overview">Svelte — Overview</a><small>svelte.dev/docs/svelte/overview</small></li>
-              <li><a href="https://docs.solidjs.com/concepts/signals">Solid — Signals</a><small>docs.solidjs.com/concepts/signals</small></li>
+              <li><a href="https://vuejs.org/guide/extras/rendering-mechanism">Vue — 描画の仕組み</a><small>vuejs.org/guide/extras/rendering-mechanism</small></li>
+              <li><a href="https://github.com/vuejs/core/releases/tag/v3.6.0-rc.1">Vue 3.6.0-rc.1 — Vapor</a><small>github.com/vuejs/core/releases/tag/v3.6.0-rc.1</small></li>
+              <li><a href="https://svelte.dev/docs/svelte/overview">Svelte — 概要</a><small>svelte.dev/docs/svelte/overview</small></li>
+              <li><a href="https://docs.solidjs.com/concepts/signals">Solid — シグナル</a><small>docs.solidjs.com/concepts/signals</small></li>
               <li><a href="https://docs.solidjs.com/reference/components/for">Solid — For</a><small>docs.solidjs.com/reference/components/for</small></li>
             </ul>
           </div>
